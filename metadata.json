@@ -1,0 +1,6 @@
+{
+  "name": "Resep Nusantara",
+  "description": "Aplikasi 500 Resep Masakan, Cake Tradisional, Minuman, dan Camilan Sehat Nusantara dengan kalkulator nutrisi per porsi, daftar belanja, dan panduan memasak offline.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
