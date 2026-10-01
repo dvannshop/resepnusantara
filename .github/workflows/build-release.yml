@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Memungkinkan klik tombol 'Run workflow' secara manual
   push:
     branches:
-      - main # Atau sesuaikan dengan nama branch utama Anda (misal: master)
+      - main # Atau ganti master jika branch Anda bernama master
 
 jobs:
   build:
@@ -21,8 +21,22 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
+      # Cari letak gradlew secara otomatis (apakah di root atau di subfolder)
+      - name: Locate and Prepare Gradlew
+        run: |
+          GRADLEW_FILE=$(find . -name "gradlew" -type f | head -n 1)
+          if [ -n "$GRADLEW_FILE" ]; then
+            GRADLE_DIR=$(dirname "$GRADLEW_FILE")
+            echo "Menemukan gradlew di: $GRADLE_DIR"
+            chmod +x "$GRADLEW_FILE"
+            echo "GRADLE_DIR=$GRADLE_DIR" >> $GITHUB_ENV
+          else
+            echo "File gradlew tidak ditemukan! Menginstal gradle wrapper baru..."
+            sudo apt-get install -y gradle
+            gradle wrapper
+            chmod +x gradlew
+            echo "GRADLE_DIR=." >> $GITHUB_ENV
+          fi
 
       # 1. BUAT KEYSTORE OTOMATIS DI SERVER GITHUB
       - name: Generate Keystore on Runner
@@ -39,6 +53,7 @@ jobs:
 
       # 2. BUILD DAN SIGN APK RELEASE
       - name: Build Signed Release APK
+        working-directory: ${{ env.GRADLE_DIR }}
         env:
           KEYSTORE_PATH: ${{ runner.temp }}/my-release-key.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -51,7 +66,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ResepNusantara-Release-APK
-          path: app/build/outputs/apk/release/*.apk
+          path: '**/build/outputs/apk/release/*.apk'
 
       # 4. SIMPAN CADANGAN KEYSTORE KE ARTIFACTS (PENTING!)
       - name: Backup Keystore Artifact
