@@ -21,9 +21,11 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
-      # Pasang Gradle langsung di sistem runner
-      - name: Setup Gradle System
+      # Pasang Gradle versi 7.6.4 (Kompatibel penuh dengan Java 11)
+      - name: Setup Gradle 7.6.4
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '7.6.4'
 
       # Cari letak file build.gradle proyek Anda
       - name: Locate Project Directory
@@ -50,7 +52,7 @@ jobs:
             -keypass "${{ secrets.KEYSTORE_PASSWORD }}" \
             -dname "CN=Resep Nusantara, OU=App, O=ResepNusantara, L=Jakarta, ST=Jakarta, C=ID"
 
-      # 2. BUILD DAN SIGN APK RELEASE (memakai gradle sistem, bukan ./gradlew)
+      # 2. BUILD DAN SIGN APK RELEASE
       - name: Build Signed Release APK
         working-directory: ${{ env.PROJECT_DIR }}
         env:
