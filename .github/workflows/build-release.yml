@@ -26,7 +26,7 @@ jobs:
         with:
           gradle-version: '9.3.1'
 
-      # Cari direktori root project
+      # Cari letak root project
       - name: Locate Project Directory
         run: |
           BUILD_FILE=$(find . -maxdepth 2 \( -name "settings.gradle" -o -name "settings.gradle.kts" \) | head -n 1)
@@ -37,40 +37,44 @@ jobs:
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
 
-      # Buat fallback google-services.json jika belum ada di repositori
-      - name: Ensure google-services.json Exists
+      # Buat google-services.json dengan package name aplikasi Anda yang sesuai
+      - name: Configure google-services.json
         run: |
           APP_DIR=$(find . -maxdepth 2 -type d -name "app" | head -n 1)
           if [ -z "$APP_DIR" ]; then APP_DIR="app"; fi
           
-          if [ ! -f "$APP_DIR/google-services.json" ]; then
-            echo "Membuat template google-services.json..."
-            cat << 'EOF' > "$APP_DIR/google-services.json"
+          cat << 'EOF' > "$APP_DIR/google-services.json"
           {
             "project_info": {
               "project_number": "1234567890",
-              "project_id": "resep-nusantara",
-              "storage_bucket": "resep-nusantara.appspot.com"
+              "project_id": "resep-nusantara-app",
+              "storage_bucket": "resep-nusantara-app.appspot.com"
             },
             "client": [
               {
                 "client_info": {
-                  "mobilesdk_app_id": "1:1234567890:android:abcdef123456",
+                  "mobilesdk_app_id": "1:1234567890:android:abcdef1234567890",
                   "android_client_info": {
-                    "package_name": "com.example.resepnusantara"
+                    "package_name": "com.aistudio.resepnusantara.kpyz"
                   }
                 },
                 "oauth_client": [],
-                "api_key": [{ "current_key": "fake_api_key_for_ci_build" }],
+                "api_key": [
+                  {
+                    "current_key": "fake_api_key_for_release_build"
+                  }
+                ],
                 "services": {
-                  "appinvite_service": { "other_platform_oauth_client": [] }
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
                 }
               }
             ],
             "configuration_version": "1"
           }
           EOF
-          fi
+          echo "google-services.json berhasil dikonfigurasi untuk com.aistudio.resepnusantara.kpyz"
 
       # 1. BUAT KEYSTORE RELEASE OTOMATIS
       - name: Generate Keystore on Runner
