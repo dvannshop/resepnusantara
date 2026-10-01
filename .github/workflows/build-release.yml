@@ -1,10 +1,10 @@
 name: Generate Keystore & Build Release APK
 
 on:
-  workflow_dispatch: # Memungkinkan klik tombol 'Run workflow' secara manual
+  workflow_dispatch:
   push:
     branches:
-      - main # Atau ganti master jika branch Anda bernama master
+      - main # Sesuaikan jika nama branch master
 
 jobs:
   build:
@@ -14,14 +14,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # Menggunakan Java 8 agar cocok dengan Gradle 4.x
+      - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
+          java-version: '8'
 
-      # Cari letak gradlew secara otomatis (apakah di root atau di subfolder)
+      # Cari letak gradlew secara otomatis
       - name: Locate and Prepare Gradlew
         run: |
           GRADLEW_FILE=$(find . -name "gradlew" -type f | head -n 1)
@@ -38,7 +38,7 @@ jobs:
             echo "GRADLE_DIR=." >> $GITHUB_ENV
           fi
 
-      # 1. BUAT KEYSTORE OTOMATIS DI SERVER GITHUB
+      # 1. BUAT KEYSTORE OTOMATIS
       - name: Generate Keystore on Runner
         run: |
           keytool -genkeypair -v \
@@ -61,14 +61,14 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || secrets.KEYSTORE_PASSWORD }}
         run: ./gradlew assembleRelease --no-daemon
 
-      # 3. UPLOAD APK HASIL BUILD KE GITHUB ARTIFACTS
+      # 3. UPLOAD APK HASIL BUILD
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: ResepNusantara-Release-APK
           path: '**/build/outputs/apk/release/*.apk'
 
-      # 4. SIMPAN CADANGAN KEYSTORE KE ARTIFACTS (PENTING!)
+      # 4. SIMPAN CADANGAN KEYSTORE KE ARTIFACTS
       - name: Backup Keystore Artifact
         uses: actions/upload-artifact@v4
         with:
