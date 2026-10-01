@@ -14,18 +14,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Menggunakan Java 11
-      - name: Set up JDK 11
+      # Gunakan JDK 17 (karena foojay-resolver wajib Java 17)
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
-      # Pasang Gradle versi 7.6.4 (Kompatibel penuh dengan Java 11)
-      - name: Setup Gradle 7.6.4
+      # Pasang Gradle 8.4 (kompatibel penuh dengan Java 17 dan Android Gradle Plugin modern)
+      - name: Setup Gradle 8.4
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '7.6.4'
+          gradle-version: '8.4'
 
       # Cari letak file build.gradle proyek Anda
       - name: Locate Project Directory
