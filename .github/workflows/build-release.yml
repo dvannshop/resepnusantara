@@ -37,7 +37,7 @@ jobs:
           fi
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
 
-      # Buat google-services.json dengan package name aplikasi Anda yang sesuai
+      # Konfigurasi google-services.json untuk package name com.aistudio.resepnusantara.kpyz
       - name: Configure google-services.json
         run: |
           APP_DIR=$(find . -maxdepth 2 -type d -name "app" | head -n 1)
@@ -74,9 +74,8 @@ jobs:
             "configuration_version": "1"
           }
           EOF
-          echo "google-services.json berhasil dikonfigurasi untuk com.aistudio.resepnusantara.kpyz"
 
-      # 1. BUAT KEYSTORE RELEASE OTOMATIS
+      # 1. BUAT KEYSTORE RELEASE DENGAN PASSWORD FIX
       - name: Generate Keystore on Runner
         run: |
           keytool -genkeypair -v \
@@ -85,8 +84,8 @@ jobs:
             -keyalg RSA \
             -keysize 2048 \
             -validity 10000 \
-            -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
-            -keypass "${{ secrets.KEYSTORE_PASSWORD }}" \
+            -storepass "ResepNusantaraSecret2026!" \
+            -keypass "ResepNusantaraSecret2026!" \
             -dname "CN=Resep Nusantara, OU=App, O=ResepNusantara, L=Jakarta, ST=Jakarta, C=ID"
 
       # 2. BUILD DAN SIGN APK RELEASE
@@ -96,12 +95,18 @@ jobs:
           JAVA_OPTS: "-Djava.awt.headless=true"
           _JAVA_OPTIONS: "-Djava.awt.headless=true"
           KEYSTORE_PATH: ${{ runner.temp }}/my-release-key.jks
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_PASSWORD: ResepNusantaraSecret2026!
           KEY_ALIAS: my-key-alias
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || secrets.KEYSTORE_PASSWORD }}
-        run: gradle assembleRelease --no-daemon -Djava.awt.headless=true
+          KEY_PASSWORD: ResepNusantaraSecret2026!
+        run: |
+          gradle assembleRelease --no-daemon \
+            -Djava.awt.headless=true \
+            -Pandroid.injected.signing.store.file=${{ runner.temp }}/my-release-key.jks \
+            -Pandroid.injected.signing.store.password=ResepNusantaraSecret2026! \
+            -Pandroid.injected.signing.key.alias=my-key-alias \
+            -Pandroid.injected.signing.key.password=ResepNusantaraSecret2026!
 
-      # 3. UPLOAD APK HASIL BUILD KE ARTIFACTS
+      # 3. UPLOAD APK RELEASE HASIL BUILD KE ARTIFACTS
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
